@@ -3,6 +3,7 @@ from dash import Dash, html, Input, Output, callback
 from dash_bio.utils import PdbParser, create_mol3d_style
 
 app = Dash()
+server = app.server
 parser = PdbParser('All.pdb')
 data = parser.mol3d_data()
 default_styles = create_mol3d_style(
