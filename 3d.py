@@ -78,7 +78,7 @@ def _is_ki67_domain(residue_num):
 
 
 app = Dash()
-# server = app.server
+server = app.server
 parser = PdbParser('All.pdb')
 data = parser.mol3d_data()
 default_styles = []
