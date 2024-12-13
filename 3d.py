@@ -43,12 +43,42 @@ def get_region(residue_num):
 def _is_ki67_domain(residue_num):
     if 92 <= residue_num <= 113:
         return 'Ki67-1'
+    elif 214 <= residue_num <= 235:
+        return 'Ki67-2'
+    elif 336 <= residue_num <= 357:
+        return 'Ki67-3'
+    elif 458 <= residue_num <= 478:
+        return 'Ki67-4'
+    elif 578 <= residue_num <= 599:
+        return 'Ki67-5'
+    elif 700 <= residue_num <= 721:
+        return 'Ki67-6'
+    elif 822 <= residue_num <= 843:
+        return 'Ki67-7'
+    elif 944 <= residue_num <= 965:
+        return 'Ki67-8'
+    elif 1066 <= residue_num <= 1087:
+        return 'Ki67-9'
+    elif 1184 <= residue_num <= 1205:
+        return 'Ki67-10'
+    elif 1306 <= residue_num <= 1327:
+        return 'Ki67-11'
+    elif 1427 <= residue_num <= 1448:
+        return 'Ki67-12'
+    elif 1549 <= residue_num <= 1570:
+        return 'Ki67-13'
+    elif 1669 <= residue_num <= 1690:
+        return 'Ki67-14'
+    elif 1791 <= residue_num <= 1806:
+        return 'Ki67-15'
+    elif 1909 <= residue_num <= 1929:
+        return 'Ki67-16'
     else:
         return False
 
 
 app = Dash()
-server = app.server
+# server = app.server
 parser = PdbParser('All.pdb')
 data = parser.mol3d_data()
 default_styles = []
@@ -72,6 +102,7 @@ app.layout = html.Div(
             id='dashbio-default-molecule3d',
             modelData=data,
             styles=default_styles,
+            style={'width': '100%', 'height': '500px'},
         ),
         dcc.Checklist(
             id='highlight-checkbox',
@@ -79,7 +110,18 @@ app.layout = html.Div(
             value=[],
         ),
         html.Br(),
-        html.Label("Highlight Region:"),
+        dcc.Dropdown(
+            id='style-dropdown',
+            options=[
+                {'label': 'Stick', 'value': 'stick'},
+                {'label': 'Cartoon', 'value': 'cartoon'},
+                {'label': 'Sphere', 'value': 'sphere'},
+            ],
+            value='cartoon',  # Default value
+            placeholder="Select Visualization Style",
+        ),
+        html.Br(),
+        # html.Label("Highlight Region:"),
         html.Div(id='default-molecule3d-output'),
     ],
     style={
@@ -88,16 +130,18 @@ app.layout = html.Div(
         'alignItems': 'center',
         'justifyContent': 'center',
         'height': '100vh',
-        'textAlign': 'center',
+        'width': '100%',
+        'textAlign': 'left',
     }
 )
 
 @callback(
     Output('dashbio-default-molecule3d', 'styles'),
     [Input('highlight-checkbox', 'value')],
-    [Input('dashbio-default-molecule3d', 'selectedAtomIds')]
+    [Input('dashbio-default-molecule3d', 'selectedAtomIds')],
+    [Input('style-dropdown', 'value')],
 )
-def highlight_region(checkbox_values, atom_ids):
+def highlight_region(checkbox_values, atom_ids, style):
     # Return default styles if no atoms are selected
     if atom_ids is None or len(atom_ids) == 0:
         return default_styles.copy()  # Ensure a new object is returned
@@ -111,7 +155,7 @@ def highlight_region(checkbox_values, atom_ids):
     new_styles = []
     for atom in data['atoms']:
         atom_style = {
-            'visualization_type': 'cartoon',
+            'visualization_type': style,
             'color': 'grey'  # Default color for all atoms
         }
         atom_residue_num = atom.get('residue_index', 'N/A')
@@ -133,14 +177,14 @@ def highlight_region(checkbox_values, atom_ids):
 )
 def show_selected_atoms(atom_ids):
     if atom_ids is None or len(atom_ids) == 0:
-        return 'No atom has been selected. Click somewhere on the molecular structure to select an atom.'
+        return 'No residue has been selected. Click somewhere on the protein structure to select a residue.'
 
     output = []
     atm = atom_ids[-1]
     atom_info = data['atoms'][atm]
     residue_num = atom_info.get('residue_index', 'N/A')
     region = get_region(residue_num)
-    ki67_domain_number = 'N/A'
+    ki67_domain_number = 'No'
     if _is_ki67_domain(residue_num):
         ki67_domain_number = _is_ki67_domain(residue_num)
 
@@ -150,7 +194,7 @@ def show_selected_atoms(atom_ids):
         html.Div(f'Residue name: {atom_info["residue_name"]}'),
         # html.Div(f'Residue number: {residue_num}'),
         html.Div(f'Region: {region}'),
-        html.Div(f'Ki67_domain: {ki67_domain_number}'),
+        html.Div(f'Is Ki67 Domain: {ki67_domain_number}'),
         html.Br()
     ]))
 
